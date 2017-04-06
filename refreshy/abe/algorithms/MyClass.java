@@ -14,9 +14,53 @@ public class MyClass {
 
 	public static void main(String[] args) {
 		
-
+		GraphNode<Integer> one = new GraphNode<Integer>(1);
+		GraphNode<Integer> two = new GraphNode<Integer>(2);
+		GraphNode<Integer> three = new GraphNode<Integer>(3);
+		GraphNode<Integer> four = new GraphNode<Integer>(4);
+		GraphNode<Integer> five = new GraphNode<Integer>(5);
+		GraphNode<Integer> six = new GraphNode<Integer>(6);
+		GraphNode<Integer> seven = new GraphNode<Integer>(7);
+		GraphNode<Integer> eight = new GraphNode<Integer>(8);
+		GraphNode<Integer> nine = new GraphNode<Integer>(9);
 		
+		GraphNode[] nodes = {one,two,three,four,five,six,seven,eight,nine};
+		
+		one.addNeighbor(two);
+		one.addNeighbor(three);
+		two.addNeighbor(four);
+		three.addNeighbor(five);
+		four.addNeighbor(six);
+		six.addNeighbor(nine);
+		nine.addNeighbor(eight);
+		nine.addNeighbor(seven);
 
+		System.out.println(isTree(nodes));
+
+	}
+	
+	
+	public static boolean isTree(GraphNode<Integer>[] nodes){
+		
+		int n = nodes.length;
+		
+		for(int i =0;i<n;i++){
+			GraphNode<Integer> current  = nodes[i];
+			if(!current.isVisited){
+				MyQueue<GraphNode<Integer>> q = new MyQueue<GraphNode<Integer>>();
+				q.addElement(current);
+				while(!q.isEmpty()){
+					current = q.removeElement();
+					current.visit();
+					for(GraphNode<Integer> item: current.getNeighbors()){
+						if(item.isVisited)
+							return false;
+						q.addElement(item);
+					}
+				}	
+			}
+		}
+		return true;
 	}
 	
 	

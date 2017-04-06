@@ -8,6 +8,7 @@ public class GraphNode <T> {
 	
 	T data=null;
 	boolean isVisited=false;
+	boolean isCurrent=false;
 	Map<T,GraphNode<T>> neighbors = new HashMap<T,GraphNode<T>>();
 	Map<T,Integer> distance = new HashMap<T,Integer>();
 	
