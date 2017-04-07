@@ -13,32 +13,35 @@ import java.util.Stack;
 public class MyClass {
 
 	public static void main(String[] args) {
+		int[] seq = {1, 231, 2, 4, 89, 32, 12, 234, 33, 90, 34, 100};
+		System.out.println(longestIncreasingSubsequence(seq));
 		
-		GraphNode<Integer> one = new GraphNode<Integer>(1);
-		GraphNode<Integer> two = new GraphNode<Integer>(2);
-		GraphNode<Integer> three = new GraphNode<Integer>(3);
-		GraphNode<Integer> four = new GraphNode<Integer>(4);
-		GraphNode<Integer> five = new GraphNode<Integer>(5);
-		GraphNode<Integer> six = new GraphNode<Integer>(6);
-		GraphNode<Integer> seven = new GraphNode<Integer>(7);
-		GraphNode<Integer> eight = new GraphNode<Integer>(8);
-		GraphNode<Integer> nine = new GraphNode<Integer>(9);
-		
-		GraphNode[] nodes = {one,two,three,four,five,six,seven,eight,nine};
-		
-		one.addNeighbor(two);
-		one.addNeighbor(three);
-		two.addNeighbor(four);
-		three.addNeighbor(five);
-		four.addNeighbor(six);
-		six.addNeighbor(nine);
-		nine.addNeighbor(eight);
-		nine.addNeighbor(seven);
-
-		System.out.println(isTree(nodes));
-
 	}
 	
+	
+	public static int longestIncreasingSubsequence(int[] seq) {
+	    int[] helper = new int[seq.length];
+	    int max = 1;
+	    helper[0]=1;
+	    for(int i =1;i<helper.length;i++){
+	        int j = i-1;
+	        int candidate=1;
+	        while(j>=0){
+	            if(seq[i]>seq[j] && helper[j]+1>candidate){
+	                candidate = helper[j]+1;
+	            }
+	            if(candidate==max+1){
+	                max++;
+	                break;
+	            }
+	            j--;
+	        }
+	        helper[i]=candidate;
+	    }
+	    return max;
+	}
+
+
 	
 	public static boolean isTree(GraphNode<Integer>[] nodes){
 		
