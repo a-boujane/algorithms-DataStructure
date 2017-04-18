@@ -1,5 +1,6 @@
 package refreshy.abe.algorithms;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,149 +13,365 @@ import java.util.Stack;
 
 public class MyClass {
 
-	public static void main(String[] args) {
-		int[] seq = {1, 231, 2, 4, 89, 32, 12, 234, 33, 90, 34, 100};
-		System.out.println(longestIncreasingSubsequence(seq));
+	public static void main(String[] args) throws IOException, InterruptedException {
+
+		// char[] hi = {'1','2','3','4','5','6','7','8','9'};
+		// for(int i = 0;i<60;i++){
+		// System.out.println(hi=nextString(hi));
+		// }
+		String yp = "abcdefghij";
+		int n = yp.length();
+		int fac = 1;
+		while(n>0){
+			fac*=n;
+			n--;
+		}
+		final long start = System.currentTimeMillis();
+		boolean found = false;
+		String current=yp;
+		List<String> r1 = new ArrayList<>(fac+1);
+		while(!found){
+			current = nextString(current);
+			r1.add(current);
+			if(current.compareTo(yp)==0)
+				found=true;	
+		}
+		final long intermediate = System.currentTimeMillis();
+		System.out.println("Here is the smart method : "+(intermediate-start));
+		
+		strPerm(yp);
+		
+		
+		final long finaly = System.currentTimeMillis();
+		System.out.println("Here is the dumb method : "+(finaly-intermediate));
 		
 	}
+
+	public static String nextString(String input) {
+		return String.valueOf(nextString(input.toCharArray()));
+	}
 	
-	
+
+	public static char[] nextString(char[] input) {
+		int n = input.length;
+		char[] result = new char[n];
+		int pivotIndex = n - 1;
+		int index = n - 1;
+		if (input[n - 1] > input[n - 2])
+			index = n - 1;
+		else {
+			while (index > 0 && input[index] <= input[index - 1])
+				index--;
+		}
+		pivotIndex = index;
+		if (pivotIndex < 1) {
+			for(int i =0;i<n;i++)
+				result[n-1-i]=input[i];
+		} else {
+			char winner = input[pivotIndex - 1];
+			index = 0;
+			while (index < pivotIndex - 1) {
+				result[index] = input[index];
+				index++;
+			}
+			index = n - 1;
+			int helper = pivotIndex;
+			boolean found = false;
+			while (helper < n) {
+				if (!found && input[index] > winner) {
+					result[pivotIndex - 1] = input[index];
+					input[index] = winner;
+					found = true;
+				} else {
+					result[helper] = input[index];
+					helper++;
+					index--;
+				}
+			}
+		}
+		return result;
+	}
+
+	public static List<String> strPerm(String input) {
+		int n = input.length();
+		List<String> result = new ArrayList<>();
+
+		List<String> candidate;
+
+		result.add(String.valueOf(input.charAt(0)));
+		int length = 1;
+		for (int i = 1; i < n; i++) {
+			candidate = new ArrayList<>(length * n * 2);
+			length = result.size();
+			for (int j = 0; j < length; j++) {
+				for (int k = 0; k <= i; k++) {
+					candidate.add(result.get(j).substring(0, k) + input.charAt(i) + result.get(j).substring(k));
+				}
+			}
+			result = candidate;
+		}
+		return result;
+
+	}
+
+	static int wordLadder(String beginWord, String endWord, String[] wordList) {
+		GraphNody startNode = new GraphNody(beginWord);
+		startNode.depth = 0;
+		GraphNody endNode = new GraphNody(endWord);
+		endNode.depth = 0;
+
+		GraphNody[] nodes = new GraphNody[wordList.length];
+		for (int i = 0; i < wordList.length; i++) {
+			nodes[i] = new GraphNody(wordList[i]);
+		}
+		System.out.println("Adding beginWOrd and endWord neighbors:\n");
+		for (int i = 0; i < wordList.length; i++) {
+			if (distanceOne(beginWord, wordList[i])) {
+				System.out.println("\tAdding '" + wordList[i] + "' as a BeginWord Neighbor");
+				startNode.neighbors.add(nodes[i]);
+			}
+			if (distanceOne(endWord, wordList[i])) {
+				System.out.println("\tAdding '" + wordList[i] + "' as a EndWOrd Neighbor");
+				endNode.neighbors.add(nodes[i]);
+			}
+		}
+		System.out.println("\n\nAdding people's neighbors :\n");
+
+		for (int i = 0; i < wordList.length; i++) {
+			for (int j = i + 1; j < wordList.length; j++) {
+				if (distanceOne(wordList[i], wordList[j])) {
+					System.out.println("\tAdding '" + wordList[i] + "' as a '" + wordList[j] + "' Neighbor");
+					nodes[i].neighbors.add(nodes[j]);
+					nodes[j].neighbors.add(nodes[i]);
+				}
+			}
+		}
+
+		FastQueue<GraphNody> starter = new FastQueue<>();
+		starter.add(startNode);
+		FastQueue<GraphNody> ender = new FastQueue<>();
+		ender.add(endNode);
+
+		while (!starter.isEmpty() && !ender.isEmpty()) {
+			GraphNody starty = starter.remove();
+			starty.visited = 's';
+			for (GraphNody node : starty.neighbors) {
+				if (node.visited != 's') {
+					if (node.visited == 'f') {
+						return node.depth + starty.depth + 2;
+					} else {
+						node.visited = 's';
+						node.depth = starty.depth + 1;
+						starter.add(node);
+					}
+				}
+			}
+			GraphNody endy = ender.remove();
+			endy.visited = 'f';
+			for (GraphNody node : endy.neighbors) {
+				if (node.visited != 'f') {
+					if (node.visited == 's') {
+						return node.depth + endy.depth + 2;
+					} else {
+						node.visited = 'f';
+						node.depth = endy.depth + 1;
+						ender.add(node);
+					}
+				}
+			}
+
+		}
+
+		return -1;
+	}
+
+	static boolean distanceOne(String a, String b) {
+		boolean result = false;
+		int n = a.length() - 1;
+
+		while (n >= 0) {
+			if (result && a.charAt(n) != b.charAt(n)) {
+				return false;
+			}
+			if (!result && a.charAt(n) != b.charAt(n)) {
+				result = true;
+			}
+			n--;
+		}
+
+		return result;
+	}
+
+	public static int indexFuckedUp(String number) {
+		if (number != null) {
+			int i = 0;
+
+			while (i < number.length() - 1) {
+				if (number.charAt(i) > number.charAt(i + 1))
+					return i;
+				i++;
+			}
+		}
+		return -1;
+	}
+
+	public static String fixTidy(int index, String number) {
+		if (index == -1)
+			return number;
+		char[] input = number.toCharArray();
+		int n = number.length();
+		int i = index;
+
+		input[index]--;
+
+		while (i > 0) {
+			if (input[i - 1] <= input[i])
+				break;
+			else {
+				i--;
+				input[i]--;
+			}
+		}
+
+		while (i < n - 1) {
+			input[i + 1] = '9';
+			i++;
+		}
+
+		return input[0] == '0' ? String.valueOf(input).substring(1) : String.valueOf(input);
+	}
+
 	public static int longestIncreasingSubsequence(int[] seq) {
-	    int[] helper = new int[seq.length];
-	    int max = 1;
-	    helper[0]=1;
-	    for(int i =1;i<helper.length;i++){
-	        int j = i-1;
-	        int candidate=1;
-	        while(j>=0){
-	            if(seq[i]>seq[j] && helper[j]+1>candidate){
-	                candidate = helper[j]+1;
-	            }
-	            if(candidate==max+1){
-	                max++;
-	                break;
-	            }
-	            j--;
-	        }
-	        helper[i]=candidate;
-	    }
-	    return max;
+		int[] helper = new int[seq.length];
+		int max = 1;
+		helper[0] = 1;
+		for (int i = 1; i < helper.length; i++) {
+			int j = i - 1;
+			int candidate = 1;
+			while (j >= 0) {
+				if (seq[i] > seq[j] && helper[j] + 1 > candidate) {
+					candidate = helper[j] + 1;
+				}
+				if (candidate == max + 1) {
+					max++;
+					break;
+				}
+				j--;
+			}
+			helper[i] = candidate;
+		}
+		return max;
 	}
 
+	public static boolean isTree(GraphNode<Integer>[] nodes) {
 
-	
-	public static boolean isTree(GraphNode<Integer>[] nodes){
-		
 		int n = nodes.length;
-		
-		for(int i =0;i<n;i++){
-			GraphNode<Integer> current  = nodes[i];
-			if(!current.isVisited){
+
+		for (int i = 0; i < n; i++) {
+			GraphNode<Integer> current = nodes[i];
+			if (!current.isVisited) {
 				MyQueue<GraphNode<Integer>> q = new MyQueue<GraphNode<Integer>>();
 				q.addElement(current);
-				while(!q.isEmpty()){
+				while (!q.isEmpty()) {
 					current = q.removeElement();
 					current.visit();
-					for(GraphNode<Integer> item: current.getNeighbors()){
-						if(item.isVisited)
+					for (GraphNode<Integer> item : current.getNeighbors()) {
+						if (item.isVisited)
 							return false;
 						q.addElement(item);
 					}
-				}	
+				}
 			}
 		}
 		return true;
 	}
-	
-	
-	public static int firstCommonAncestor(TreeHack node1, TreeHack node2, boolean checkLeft, boolean checkRight){
-		if(node1==node2)
+
+	public static int firstCommonAncestor(TreeHack node1, TreeHack node2, boolean checkLeft, boolean checkRight) {
+		if (node1 == node2)
 			return node1.data;
-		if(checkLeft){
-			if(node1.hasLeft())
-				if(isGranpa(node1.lefty, node2))
+		if (checkLeft) {
+			if (node1.hasLeft())
+				if (isGranpa(node1.lefty, node2))
 					return node1.data;
 		}
-		if(checkRight){
-			if(node1.hasRight())
-				if(isGranpa(node1.righty, node2))
+		if (checkRight) {
+			if (node1.hasRight())
+				if (isGranpa(node1.righty, node2))
 					return node1.data;
 		}
-		if(node1.isLeftChild()){
+		if (node1.isLeftChild()) {
 			return firstCommonAncestor(node1.parent, node2, false, true);
 		}
-		if(node1.isRightChild()){
+		if (node1.isRightChild()) {
 			return firstCommonAncestor(node1.parent, node2, true, false);
 		}
 		return 0;
 	}
-	
-	public static boolean isGranpa(TreeHack granpa, TreeHack kiddo){
-		
-		MyQueue<TreeHack> q =new MyQueue<TreeHack>();
+
+	public static boolean isGranpa(TreeHack granpa, TreeHack kiddo) {
+
+		MyQueue<TreeHack> q = new MyQueue<TreeHack>();
 		q.addElement(granpa);
-		
-		while(!q.isEmpty()){
+
+		while (!q.isEmpty()) {
 			TreeHack current = q.removeElement();
-			if(current==kiddo)
+			if (current == kiddo)
 				return true;
-			if(current.hasLeft())
+			if (current.hasLeft())
 				q.addElement(current.lefty);
-			if(current.hasRight())
+			if (current.hasRight())
 				q.addElement(current.righty);
 		}
 		return false;
 	}
 
-	public static int numPaths(TreeHack node, int target, List<Integer> sumsSoFar){
+	public static int numPaths(TreeHack node, int target, List<Integer> sumsSoFar) {
 		int result = 0;
 		int n = sumsSoFar.size();
-		
-		if(node.data==target)
+
+		if (node.data == target)
 			result++;
-		
-		for(int i = 0; i<n ; i++){
-			if(node.data+sumsSoFar.get(i)==target)
+
+		for (int i = 0; i < n; i++) {
+			if (node.data + sumsSoFar.get(i) == target)
 				result++;
-			sumsSoFar.set(i, node.data+sumsSoFar.get(i));
+			sumsSoFar.set(i, node.data + sumsSoFar.get(i));
 		}
 		sumsSoFar.add(node.data);
 		boolean gone = false;
 		List<Integer> rightSum = new ArrayList<Integer>(sumsSoFar);
-		if(node.lefty!=null){
-			result+=numPaths(node.lefty, target, sumsSoFar);
-			gone=true;
+		if (node.lefty != null) {
+			result += numPaths(node.lefty, target, sumsSoFar);
+			gone = true;
 		}
-		if(node.righty!=null){
-			if(gone)
-				result+=numPaths(node.righty, target, rightSum);
-			else{
-				result+=numPaths(node.righty, target, sumsSoFar);
+		if (node.righty != null) {
+			if (gone)
+				result += numPaths(node.righty, target, rightSum);
+			else {
+				result += numPaths(node.righty, target, sumsSoFar);
 			}
 		}
-		
+
 		return result;
 	}
-	
-	public static void rotateMatrix(int[][] input){
+
+	public static void rotateMatrix(int[][] input) {
 		int n = input.length;
-		
-		for(int i =0;i<=n/2;i++){
+
+		for (int i = 0; i <= n / 2; i++) {
 			int start = i;
-			int end = n-1-i;
-			for(int j = start;j<=end-1;j++){
+			int end = n - 1 - i;
+			for (int j = start; j <= end - 1; j++) {
 				int temp = input[start][j];
-				input[start][j] = input[end-j][start];
-				input[end-j][start] = input[end][end-j];
-				input[end][end-j] = input[j][end];
+				input[start][j] = input[end - j][start];
+				input[end - j][start] = input[end][end - j];
+				input[end][end - j] = input[j][end];
 				input[j][end] = temp;
 
 			}
-			
-			
+
 		}
-		
-		
+
 	}
 
 	public static String longestPalindrome(String input) {
@@ -225,7 +442,6 @@ public class MyClass {
 	public static List<ArrayList<Integer>> listArrays(BinaryTreeNode<Integer> root) {
 
 		List<ArrayList<BinaryTreeNode<Integer>>> daList = new ArrayList<ArrayList<BinaryTreeNode<Integer>>>();
-		
 
 		MyQueue<BinaryTreeNode<Integer>> parents = new MyQueue<BinaryTreeNode<Integer>>();
 		List<ArrayList<BinaryTreeNode<Integer>>> temporary;
